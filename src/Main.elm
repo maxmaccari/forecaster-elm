@@ -43,7 +43,7 @@ view model =
         [ div [ class "text-4xl ml-2 font-bold" ] [ text "Data:" ]
         , case model.data of
             Just data ->
-                p [ class "mx-8 border p-4 bg-gray/10" ] [ text data ]
+                p [ class "mx-8 border p-4 bg-gray/10" ] [ text <| Debug.toString data ]
 
             Nothing ->
                 text ""
