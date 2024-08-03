@@ -6,38 +6,52 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
 
-main =
-    Browser.sandbox { init = init, update = update, view = view }
+type alias Flags =
+    { apiUrl : String
+    , apiKey : String
+    }
 
 
 type alias Model =
-    Int
+    { apiUrl : String
+    , apiKey : String
+    }
 
 
-init : Model
-init =
-    0
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    let
+        model =
+            { apiUrl = flags.apiUrl
+            , apiKey = flags.apiKey
+            }
+    in
+    ( model, Cmd.none )
 
 
 type Msg
-    = Increment
-    | Decrement
+    = NoOp
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increment ->
-            model + 1
-
-        Decrement ->
-            model - 1
+        NoOp ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     div [ class "w-screen h-screen flex items-center justify-center" ]
-        [ button [ onClick Decrement, class "btn" ] [ text "-" ]
-        , div [ class "text-4xl ml-2 font-bold" ] [ text (String.fromInt model) ]
-        , button [ onClick Increment, class "btn ml-2" ] [ text "+" ]
+        [ div [ class "text-4xl ml-2 font-bold" ] [ text "Hello" ]
         ]
+
+
+main : Program Flags Model Msg
+main =
+    Browser.element
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        }
