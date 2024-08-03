@@ -1,5 +1,6 @@
 module Types exposing (ApiCredentials, Forecast, Model, Msg(..), Weather)
 
+import Date exposing (Date)
 import Http
 
 
@@ -14,7 +15,8 @@ type alias ApiCredentials =
 
 
 type alias Weather =
-    { description : String
+    { date : Date
+    , description : String
     , icon : String
     , temperature : Float
     , feelsLike : Float
@@ -27,17 +29,19 @@ type alias Weather =
 
 
 type alias Forecast =
-    { name : String
-    , weather : Weather
+    { city : String
+    , weathers : List Weather
     }
 
 
 type alias Model =
     { apiCredentials : ApiCredentials
-    , data : Maybe Weather
+    , currentWeather : Maybe Weather
+    , forecast : Maybe Forecast
     }
 
 
 type Msg
     = NoOp
-    | DataReceived (Result Http.Error Weather)
+    | WeatherReceived (Result Http.Error Weather)
+    | ForecastReceived (Result Http.Error Forecast)

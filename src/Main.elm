@@ -18,10 +18,17 @@ init flags =
     let
         model =
             { apiCredentials = ApiCredentials flags.apiUrl flags.apiKey
-            , data = Nothing
+            , currentWeather = Nothing
+            , forecast = Nothing
             }
+
+        cmd =
+            Cmd.batch
+                [ Api.getWeather model.apiCredentials "cuiabá"
+                , Api.get5DaysForecast model.apiCredentials "cuiabá"
+                ]
     in
-    ( model, Api.getWeather model.apiCredentials "cuiabá" )
+    ( model, cmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -30,10 +37,16 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        DataReceived (Ok data) ->
-            ( { model | data = Just data }, Cmd.none )
+        WeatherReceived (Ok weather) ->
+            ( { model | currentWeather = Just weather }, Cmd.none )
 
-        DataReceived (Err _) ->
+        WeatherReceived (Err _) ->
+            ( model, Cmd.none )
+
+        ForecastReceived (Ok forecast) ->
+            ( { model | forecast = Just forecast }, Cmd.none )
+
+        ForecastReceived (Err _) ->
             ( model, Cmd.none )
 
 
@@ -41,7 +54,13 @@ view : Model -> Html Msg
 view model =
     div [ class "w-screen h-screen flex items-center justify-center flex-col" ]
         [ div [ class "text-4xl ml-2 font-bold" ] [ text "Data:" ]
-        , case model.data of
+        , case model.currentWeather of
+            Just data ->
+                p [ class "mx-8 border p-4 bg-gray/10" ] [ text <| Debug.toString data ]
+
+            Nothing ->
+                text ""
+        , case model.forecast of
             Just data ->
                 p [ class "mx-8 border p-4 bg-gray/10" ] [ text <| Debug.toString data ]
 
