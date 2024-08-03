@@ -37,7 +37,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ class "w-screen h-screen flex items-center justify-center" ]
-        [ button [ onClick Decrement, class "text-xl px-2 bg-indigo-600 hover:bg-indigo-400 text-indigo-50" ] [ text "-" ]
+        [ button [ onClick Decrement, class "btn" ] [ text "-" ]
         , div [ class "text-4xl ml-2 font-bold" ] [ text (String.fromInt model) ]
-        , button [ onClick Increment, class "text-xl ml-2 px-2 bg-indigo-600 hover:bg-indigo-400 text-indigo-50" ] [ text "+" ]
+        , button [ onClick Increment, class "btn ml-2" ] [ text "+" ]
         ]
