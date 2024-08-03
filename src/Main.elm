@@ -1,16 +1,17 @@
 module Main exposing (..)
 
-import Browser exposing (Document)
+import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Dict exposing (Dict)
-import Elements exposing (baseView, panel, separator)
-import Html exposing (Html, div, h1, p, text)
+import Elements exposing (baseView)
+import Html exposing (Html)
 import Html.Attributes exposing (class)
-import Icons
+import Http
 import Pages.Credits as CreditsPage
 import Pages.Home as HomePage
+import Pages.NotFound as NotFoundPage
 import Route exposing (Route)
-import Types exposing (ApiCredentials, Forecast, Msg(..))
+import Types exposing (ApiCredentials, Forecast, ForecastResponse, Weather)
 import Url exposing (Url)
 
 
@@ -33,6 +34,16 @@ type alias Model =
     , page : Page
     , navKey : Nav.Key
     }
+
+
+type Msg
+    = NoOp
+    | UrlRequested UrlRequest
+    | UrlChanged Url
+    | WeatherReceived (Result Http.Error Weather)
+    | ForecastReceived (Result Http.Error ForecastResponse)
+    | HomePageMsg HomePage.Msg
+    | NotFoundPageMsg NotFoundPage.Msg
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -105,6 +116,18 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        NotFoundPageMsg notFoundMgs ->
+            case model.page of
+                NotFoundPage ->
+                    let
+                        cmd =
+                            NotFoundPage.update notFoundMgs model.navKey
+                    in
+                    ( model, Cmd.map NotFoundPageMsg cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         WeatherReceived _ ->
             ( model, Cmd.none )
 
@@ -130,19 +153,8 @@ currentView model =
             CreditsPage.view
 
         NotFoundPage ->
-            notFoundView
-
-
-notFoundView : Html Msg
-notFoundView =
-    panel "w-full max-w-80" <|
-        [ div [ class "flex items-center" ]
-            [ Icons.warning "w-8 h-8 fill-primary "
-            , h1 [ class "text-2xl bg-bold ml-2" ] [ text "Page Not Found" ]
-            ]
-        , separator ""
-        , p [ class "mt-2" ] [ text "The given url is not found." ]
-        ]
+            NotFoundPage.view
+                |> Html.map NotFoundPageMsg
 
 
 main : Program Flags Model Msg

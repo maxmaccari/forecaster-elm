@@ -5,30 +5,30 @@ import Http
 import Json.Decode as D exposing (Decoder)
 import Json.Decode.Pipeline as D
 import Time exposing (millisToPosix, utc)
-import Types exposing (ApiCredentials, ForecastResponse, Msg(..), Weather)
+import Types exposing (ApiCredentials, ForecastResponse, Weather)
 
 
-getWeather : ApiCredentials -> String -> Cmd Msg
-getWeather credentials location =
+getWeather : ApiCredentials -> String -> (Result Http.Error Weather -> msg) -> Cmd msg
+getWeather credentials location msg =
     let
         url =
             buildUrl credentials "weather" location
     in
     Http.get
         { url = url
-        , expect = Http.expectJson WeatherReceived decodeWeather
+        , expect = Http.expectJson msg decodeWeather
         }
 
 
-get5DaysForecast : ApiCredentials -> String -> Cmd Msg
-get5DaysForecast credentials location =
+get5DaysForecast : ApiCredentials -> String -> (Result Http.Error ForecastResponse -> msg) -> Cmd msg
+get5DaysForecast credentials location msg =
     let
         url =
             buildUrl credentials "forecast" location
     in
     Http.get
         { url = url
-        , expect = Http.expectJson ForecastReceived decodeForecast
+        , expect = Http.expectJson msg decodeForecast
         }
 
 

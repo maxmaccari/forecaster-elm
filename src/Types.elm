@@ -1,19 +1,6 @@
-module Types exposing (ApiCredentials, Forecast, ForecastResponse, Msg(..), Weather)
+module Types exposing (ApiCredentials, Forecast, ForecastResponse, Weather)
 
-import Browser exposing (UrlRequest)
 import Date exposing (Date)
-import Http
-import Pages.Home as HomePage
-import Url exposing (Url)
-
-
-type Msg
-    = NoOp
-    | UrlRequested UrlRequest
-    | UrlChanged Url
-    | WeatherReceived (Result Http.Error Weather)
-    | ForecastReceived (Result Http.Error ForecastResponse)
-    | HomePageMsg HomePage.Msg
 
 
 type alias ApiCredentials =

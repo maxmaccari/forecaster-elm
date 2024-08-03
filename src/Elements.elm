@@ -1,7 +1,8 @@
 module Elements exposing (..)
 
-import Html exposing (Html, div, hr)
+import Html exposing (Html, button, div, h2, hr, text)
 import Html.Attributes exposing (class, style)
+import Html.Events exposing (onClick)
 
 
 baseView : Html msg -> Html msg
@@ -26,6 +27,20 @@ panel classes children =
     div [ class <| "px-2 py-3 mx-4 sm:mx-0 sm:p-6 bg-secondary/80 text-primary flex flex-col " ++ classes ] children
 
 
+panelTitle : String -> Html msg
+panelTitle title =
+    h2 [ class "text-3xl font-bold text-center text-primary" ] [ text title ]
+
+
 separator : String -> Html msg
 separator classes =
     hr [ class <| "border-0 border-t border-gray " ++ classes ] []
+
+
+linkButton : msg -> String -> Html msg
+linkButton msg textContent =
+    button
+        [ class "text-primary underline cursor-pointer hover:text-primary/80"
+        , onClick msg
+        ]
+        [ text textContent ]
