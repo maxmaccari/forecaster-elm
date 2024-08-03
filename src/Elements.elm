@@ -28,4 +28,4 @@ panel classes children =
 
 separator : String -> Html msg
 separator classes =
-    hr [ class <| "border-0 border-t border-gray-darker " ++ classes ] []
+    hr [ class <| "border-0 border-t border-gray " ++ classes ] []

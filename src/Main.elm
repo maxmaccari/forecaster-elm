@@ -4,10 +4,11 @@ import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Dict exposing (Dict)
 import Elements exposing (baseView, panel, separator)
-import HomePage.Main as HomePage
-import Html exposing (Html, div, h1, hr, p, text)
+import Html exposing (Html, div, h1, p, text)
 import Html.Attributes exposing (class)
 import Icons
+import Pages.Credits as CreditsPage
+import Pages.Home as HomePage
 import Route exposing (Route)
 import Types exposing (ApiCredentials, Forecast, Msg(..))
 import Url exposing (Url)
@@ -21,6 +22,7 @@ type alias Flags =
 
 type Page
     = HomePage HomePage.Model
+    | CreditsPage
     | NotFoundPage
 
 
@@ -62,6 +64,9 @@ initCurrentPage ( model, cmd ) =
                             HomePage.init
                     in
                     ( HomePage initialModel, Cmd.none )
+
+                Route.Credits ->
+                    ( CreditsPage, Cmd.none )
     in
     ( { model | page = currentPage }, Cmd.batch [ cmd, mappedPageCmds ] )
 
@@ -93,7 +98,7 @@ update msg model =
                 HomePage homeModel ->
                     let
                         ( newHomeModel, cmd ) =
-                            HomePage.update homeMsg homeModel
+                            HomePage.update homeMsg homeModel model.navKey
                     in
                     ( { model | page = HomePage newHomeModel }, Cmd.map HomePageMsg cmd )
 
@@ -120,6 +125,9 @@ currentView model =
         HomePage homePageModel ->
             HomePage.view homePageModel
                 |> Html.map HomePageMsg
+
+        CreditsPage ->
+            CreditsPage.view
 
         NotFoundPage ->
             notFoundView

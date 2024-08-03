@@ -2,8 +2,8 @@ module Types exposing (ApiCredentials, Forecast, ForecastResponse, Msg(..), Weat
 
 import Browser exposing (UrlRequest)
 import Date exposing (Date)
-import HomePage.Main as HomePage
 import Http
+import Pages.Home as HomePage
 import Url exposing (Url)
 
 
