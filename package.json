@@ -16,6 +16,7 @@
     "elm": "^0.19.1-6",
     "elm-test": "^0.19.1-revision12",
     "parcel": "^2.12.0",
+    "parcel-transformer-elm-assets": "^1.0.3",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7"
   }

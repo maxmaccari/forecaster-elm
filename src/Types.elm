@@ -1,20 +1,19 @@
-module Types exposing (ApiCredentials, Forecast, ForecastResponse, Model, Msg(..), Weather)
+module Types exposing (ApiCredentials, Forecast, ForecastResponse, Msg(..), Weather)
 
+import Browser exposing (UrlRequest)
 import Date exposing (Date)
-import Dict exposing (Dict)
+import HomePage.Main as HomePage
 import Http
-
-
-type alias Model =
-    { apiCredentials : ApiCredentials
-    , forecasts : Dict String Forecast
-    }
+import Url exposing (Url)
 
 
 type Msg
     = NoOp
+    | UrlRequested UrlRequest
+    | UrlChanged Url
     | WeatherReceived (Result Http.Error Weather)
     | ForecastReceived (Result Http.Error ForecastResponse)
+    | HomePageMsg HomePage.Msg
 
 
 type alias ApiCredentials =
