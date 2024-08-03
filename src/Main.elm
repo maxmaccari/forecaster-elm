@@ -1,18 +1,13 @@
 module Main exposing (..)
 
+import Api
 import Browser
-import Html exposing (Html, button, div, text)
+import Html exposing (Html, div, p, text)
 import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
+import Types exposing (ApiCredentials, Model, Msg(..))
 
 
 type alias Flags =
-    { apiUrl : String
-    , apiKey : String
-    }
-
-
-type alias Model =
     { apiUrl : String
     , apiKey : String
     }
@@ -22,15 +17,11 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         model =
-            { apiUrl = flags.apiUrl
-            , apiKey = flags.apiKey
+            { apiCredentials = ApiCredentials flags.apiUrl flags.apiKey
+            , data = Nothing
             }
     in
-    ( model, Cmd.none )
-
-
-type Msg
-    = NoOp
+    ( model, Api.getWeather model.apiCredentials "cuiabá" )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -39,11 +30,23 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        DataReceived (Ok data) ->
+            ( { model | data = Just data }, Cmd.none )
+
+        DataReceived (Err _) ->
+            ( model, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
-    div [ class "w-screen h-screen flex items-center justify-center" ]
-        [ div [ class "text-4xl ml-2 font-bold" ] [ text "Hello" ]
+    div [ class "w-screen h-screen flex items-center justify-center flex-col" ]
+        [ div [ class "text-4xl ml-2 font-bold" ] [ text "Data:" ]
+        , case model.data of
+            Just data ->
+                p [ class "mx-8 border p-4 bg-gray/10" ] [ text data ]
+
+            Nothing ->
+                text ""
         ]
 
 
