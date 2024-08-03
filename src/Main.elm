@@ -2,8 +2,8 @@ module Main exposing (..)
 
 import Api
 import Browser
-import Html exposing (Html, div, p, text)
-import Html.Attributes exposing (class)
+import Dict
+import Html exposing (Html, div)
 import Types exposing (ApiCredentials, Model, Msg(..))
 
 
@@ -18,8 +18,7 @@ init flags =
     let
         model =
             { apiCredentials = ApiCredentials flags.apiUrl flags.apiKey
-            , currentWeather = Nothing
-            , forecast = Nothing
+            , forecasts = Dict.empty
             }
 
         cmd =
@@ -37,36 +36,16 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        WeatherReceived (Ok weather) ->
-            ( { model | currentWeather = Just weather }, Cmd.none )
-
-        WeatherReceived (Err _) ->
+        WeatherReceived _ ->
             ( model, Cmd.none )
 
-        ForecastReceived (Ok forecast) ->
-            ( { model | forecast = Just forecast }, Cmd.none )
-
-        ForecastReceived (Err _) ->
+        ForecastReceived _ ->
             ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
-    div [ class "w-screen h-screen flex items-center justify-center flex-col" ]
-        [ div [ class "text-4xl ml-2 font-bold" ] [ text "Data:" ]
-        , case model.currentWeather of
-            Just data ->
-                p [ class "mx-8 border p-4 bg-gray/10" ] [ text <| Debug.toString data ]
-
-            Nothing ->
-                text ""
-        , case model.forecast of
-            Just data ->
-                p [ class "mx-8 border p-4 bg-gray/10" ] [ text <| Debug.toString data ]
-
-            Nothing ->
-                text ""
-        ]
+    div [] []
 
 
 main : Program Flags Model Msg

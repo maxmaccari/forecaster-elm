@@ -5,7 +5,7 @@ import Http
 import Json.Decode as D exposing (Decoder)
 import Json.Decode.Pipeline as D
 import Time exposing (millisToPosix, utc)
-import Types exposing (ApiCredentials, Forecast, Msg(..), Weather)
+import Types exposing (ApiCredentials, ForecastResponse, Msg(..), Weather)
 
 
 getWeather : ApiCredentials -> String -> Cmd Msg
@@ -84,8 +84,8 @@ decodeWeather =
         |> D.requiredAt [ "clouds", "all" ] D.int
 
 
-decodeForecast : Decoder Forecast
+decodeForecast : Decoder ForecastResponse
 decodeForecast =
-    D.succeed Forecast
+    D.succeed ForecastResponse
         |> D.requiredAt [ "city", "name" ] D.string
         |> D.required "list" (D.list decodeWeather)

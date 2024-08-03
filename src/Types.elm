@@ -1,12 +1,32 @@
-module Types exposing (ApiCredentials, Forecast, Model, Msg(..), Weather)
+module Types exposing (ApiCredentials, Forecast, ForecastResponse, Model, Msg(..), Weather)
 
 import Date exposing (Date)
+import Dict exposing (Dict)
 import Http
+
+
+type alias Model =
+    { apiCredentials : ApiCredentials
+    , forecasts : Dict String Forecast
+    }
+
+
+type Msg
+    = NoOp
+    | WeatherReceived (Result Http.Error Weather)
+    | ForecastReceived (Result Http.Error ForecastResponse)
 
 
 type alias ApiCredentials =
     { apiUrl : String
     , apiKey : String
+    }
+
+
+type alias Forecast =
+    { cityName : String
+    , currentWeather : Weather
+    , weathers : List Weather
     }
 
 
@@ -28,20 +48,7 @@ type alias Weather =
     }
 
 
-type alias Forecast =
+type alias ForecastResponse =
     { city : String
     , weathers : List Weather
     }
-
-
-type alias Model =
-    { apiCredentials : ApiCredentials
-    , currentWeather : Maybe Weather
-    , forecast : Maybe Forecast
-    }
-
-
-type Msg
-    = NoOp
-    | WeatherReceived (Result Http.Error Weather)
-    | ForecastReceived (Result Http.Error Forecast)
