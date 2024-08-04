@@ -1,7 +1,7 @@
 module Elements exposing (..)
 
-import Html exposing (Html, a, button, div, h2, hr, text)
-import Html.Attributes exposing (class, href, rel, style, target)
+import Html exposing (Attribute, Html, a, button, div, h2, hr, text)
+import Html.Attributes exposing (attribute, class, href, rel, style, target)
 import Html.Events exposing (onClick)
 
 
@@ -55,3 +55,8 @@ externalLink url textContent =
         , rel "noopener noreferrer nofollow"
         ]
         [ text textContent ]
+
+
+dataTest : String -> Attribute msg
+dataTest tag =
+    attribute "data-test" tag

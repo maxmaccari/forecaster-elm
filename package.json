@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "parcel",
     "build": "parcel build",
-    "test": "elm-test"
+    "test": "elm-test",
+    "test:watch": "elm-test --watch"
   },
   "author": "",
   "license": "MIT",
