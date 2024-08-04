@@ -1,4 +1,4 @@
-module Types exposing (ApiCredentials, Forecast, ForecastResponse, Weather)
+module Types exposing (ApiCredentials, Forecast, ForecastResponse, Location(..), Weather)
 
 import Date exposing (Date)
 
@@ -14,6 +14,10 @@ type alias Forecast =
     , currentWeather : Weather
     , weathers : List Weather
     }
+
+
+type Location
+    = Place String
 
 
 

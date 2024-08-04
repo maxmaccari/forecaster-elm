@@ -4,8 +4,9 @@ import Browser.Navigation as Nav
 import Elements exposing (dataTest, externalLink, linkButton, panel, separator)
 import Html exposing (Html, a, button, form, img, input, p, text)
 import Html.Attributes exposing (class, disabled, href, placeholder, rel, src, target, type_, width)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Route
+import Types exposing (Location(..))
 
 
 type alias Model =
@@ -17,6 +18,7 @@ type Msg
     = NoOp
     | LocationInputChanged String
     | CreditsButtonClicked
+    | LocationFormSubmitted
 
 
 init : Model
@@ -36,6 +38,14 @@ update msg model navKey =
         LocationInputChanged newLocationInput ->
             ( { model | locationInput = newLocationInput }, Cmd.none )
 
+        LocationFormSubmitted ->
+            let
+                location =
+                    Place <|
+                        String.toLower model.locationInput
+            in
+            ( model, Route.pushUrl (Route.Forecast location) navKey )
+
 
 view : Model -> Html Msg
 view model =
@@ -51,7 +61,7 @@ view model =
     panel "w-full max-w-md"
         [ img [ src logoUrl, width 187, class "m-auto" ] []
         , separator "mt-4 sm:mt-5"
-        , form [ class "flex mt-4 sm:mt-5" ]
+        , form [ class "flex mt-4 sm:mt-5", onSubmit LocationFormSubmitted ]
             [ input
                 [ type_ "text"
                 , class "input w-full"

@@ -79,6 +79,9 @@ initCurrentPage ( model, cmd ) =
 
                 Route.Credits ->
                     ( CreditsPage, Cmd.none )
+
+                Route.Forecast location ->
+                    ( NotFoundPage, Cmd.none )
     in
     ( { model | page = currentPage }, Cmd.batch [ cmd, mappedPageCmds ] )
 

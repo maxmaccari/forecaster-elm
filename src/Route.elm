@@ -1,6 +1,7 @@
 module Route exposing (..)
 
 import Browser.Navigation as Nav
+import Types exposing (Location(..))
 import Url exposing (Url)
 import Url.Parser exposing (..)
 
@@ -9,6 +10,7 @@ type Route
     = NotFound
     | Home
     | Credits
+    | Forecast Location
 
 
 pushUrl : Route -> Nav.Key -> Cmd msg
@@ -29,6 +31,9 @@ routeToString route =
         Credits ->
             "/credits"
 
+        Forecast (Place location) ->
+            "/forecast/" ++ location
+
 
 parseUrl : Url -> Route
 parseUrl url =
@@ -45,4 +50,11 @@ matchRoute =
     oneOf
         [ map Home top
         , map Credits (s "credits")
+        , map Forecast (s "forecast" </> locationParser)
         ]
+
+
+locationParser : Parser (Location -> a) a
+locationParser =
+    custom "LOCATION" <|
+        \location -> Just (Place location)
