@@ -1,8 +1,9 @@
 module Pages.Forecast exposing (..)
 
+import Forecast exposing (Forecast)
 import Html exposing (Html, div, text)
 
 
-view : Html msg
-view =
+view : Forecast -> Html msg
+view forecast =
     div [] [ text "forecast" ]

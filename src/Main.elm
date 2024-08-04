@@ -3,12 +3,14 @@ module Main exposing (..)
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Elements exposing (baseView)
-import Forecast exposing (ApiCredentials)
-import Html exposing (Html)
+import Forecast exposing (ApiCredentials, Forecast, ForecastRemoteData, askForForecast, getForecast)
+import Forecast.Location exposing (Location)
+import Html exposing (Html, div, text)
 import Pages.Credits as CreditsPage
 import Pages.Forecast as ForecastPage
 import Pages.Home as HomePage
 import Pages.NotFound as NotFoundPage
+import RemoteData
 import Route exposing (Route)
 import Url exposing (Url)
 
@@ -23,7 +25,7 @@ type Page
     = HomePage HomePage.Model
     | CreditsPage
     | NotFoundPage
-    | ForecastPage
+    | ForecastPage Location Forecast.ForecastRemoteData
 
 
 type alias Model =
@@ -31,6 +33,7 @@ type alias Model =
     , route : Route
     , page : Page
     , navKey : Nav.Key
+    , forecastModel : Forecast.Model
     }
 
 
@@ -41,6 +44,7 @@ type Msg
     | HomePageMsg HomePage.Msg
     | NotFoundPageMsg NotFoundPage.Msg
     | CreditsPageMsg CreditsPage.Msg
+    | ForecastUpdated Forecast.Msg
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -51,6 +55,7 @@ init flags url navKey =
             , route = Route.parseUrl url
             , page = NotFoundPage
             , navKey = navKey
+            , forecastModel = Forecast.init
             }
     in
     ( model, Cmd.none )
@@ -60,25 +65,29 @@ init flags url navKey =
 initCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 initCurrentPage ( model, cmd ) =
     let
-        ( currentPage, mappedPageCmds ) =
+        ( currentPage, newModel, mappedPageCmds ) =
             case model.route of
                 Route.NotFound ->
-                    ( NotFoundPage, Cmd.none )
+                    ( NotFoundPage, model, Cmd.none )
 
                 Route.Home ->
                     let
                         initialModel =
                             HomePage.init
                     in
-                    ( HomePage initialModel, Cmd.none )
+                    ( HomePage initialModel, model, Cmd.none )
 
                 Route.Credits ->
-                    ( CreditsPage, Cmd.none )
+                    ( CreditsPage, model, Cmd.none )
 
                 Route.Forecast location ->
-                    ( ForecastPage, Cmd.none )
+                    let
+                        ( forecast, forecastModel, mappedCmd ) =
+                            askForForecast model.apiCredentials ForecastUpdated location model.forecastModel
+                    in
+                    ( ForecastPage location forecast, { model | forecastModel = forecastModel }, mappedCmd )
     in
-    ( { model | page = currentPage }, Cmd.batch [ cmd, mappedPageCmds ] )
+    ( { newModel | page = currentPage }, Cmd.batch [ cmd, mappedPageCmds ] )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -139,6 +148,21 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        ForecastUpdated forecastMsg ->
+            let
+                newForecastModel =
+                    Forecast.update forecastMsg model.forecastModel
+
+                page =
+                    case model.page of
+                        ForecastPage location _ ->
+                            ForecastPage location (getForecast location newForecastModel)
+
+                        _ ->
+                            model.page
+            in
+            ( { model | forecastModel = newForecastModel, page = page }, Cmd.none )
+
 
 view : Model -> Document Msg
 view model =
@@ -162,8 +186,24 @@ currentView model =
             NotFoundPage.view
                 |> Html.map NotFoundPageMsg
 
-        ForecastPage ->
-            ForecastPage.view
+        ForecastPage _ forecastRemoteData ->
+            remoteView ForecastPage.view forecastRemoteData
+
+
+remoteView : (Forecast -> Html Msg) -> ForecastRemoteData -> Html Msg
+remoteView succeedView remoteData =
+    case remoteData of
+        RemoteData.NotAsked ->
+            div [] [ text "Not Asked" ]
+
+        RemoteData.Loading ->
+            div [] [ text "Loading..." ]
+
+        RemoteData.Success forecast ->
+            succeedView forecast
+
+        RemoteData.Failure error ->
+            div [] [ text <| "Error..." ++ Debug.toString error ]
 
 
 main : Program Flags Model Msg

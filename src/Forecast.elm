@@ -1,10 +1,12 @@
-module Forecast exposing (ApiCredentials)
+module Forecast exposing (ApiCredentials, Forecast, ForecastError, ForecastRemoteData, Model, Msg, askForForecast, getForecast, init, update)
 
 import Date exposing (Date, fromPosix)
-import Forecast.Location exposing (Location(..))
-import Http
+import Dict exposing (Dict)
+import Forecast.Location as Location exposing (Location(..))
+import Http exposing (Error(..))
 import Json.Decode as D exposing (Decoder)
 import Json.Decode.Pipeline as D
+import RemoteData exposing (RemoteData(..))
 import Time exposing (millisToPosix, utc)
 
 
@@ -19,6 +21,29 @@ type alias Forecast =
     , currentWeather : Weather
     , weathers : List Weather
     }
+
+
+type alias ForecastRemoteData =
+    RemoteData ForecastError Forecast
+
+
+type alias Model =
+    Dict String PartialForcast
+
+
+type ForecastError
+    = InvalidLocation
+    | ParseError String
+    | HttpError String
+
+
+type PartialForcast
+    = PartialForecast (RemoteData ForecastError Weather) (RemoteData ForecastError Next5DaysForecast)
+
+
+type Msg
+    = CurrentWeatherRetrieved Location (RemoteData ForecastError Weather)
+    | Next5DaysForecestRetrieved Location (RemoteData ForecastError Next5DaysForecast)
 
 
 
@@ -39,46 +64,175 @@ type alias Weather =
     }
 
 
-type alias ForecastResponse =
+type alias Next5DaysForecast =
     { city : String
     , weathers : List Weather
     }
 
 
-getWeather : ApiCredentials -> String -> (Result Http.Error Weather -> msg) -> Cmd msg
-getWeather credentials location msg =
+init : Model
+init =
+    Dict.empty
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        CurrentWeatherRetrieved location newWeatherResult ->
+            case Dict.get (Location.toString location) model of
+                Just (PartialForecast _ current5Days) ->
+                    let
+                        newEntry =
+                            PartialForecast newWeatherResult current5Days
+
+                        newStore =
+                            Dict.insert (Location.toString location) newEntry model
+                    in
+                    newStore
+
+                Nothing ->
+                    model
+
+        Next5DaysForecestRetrieved location new5DaysResult ->
+            case Dict.get (Location.toString location) model of
+                Just (PartialForecast currentWeatherResult _) ->
+                    let
+                        newEntry =
+                            PartialForecast currentWeatherResult new5DaysResult
+
+                        newStore =
+                            Dict.insert (Location.toString location) newEntry model
+                    in
+                    newStore
+
+                Nothing ->
+                    model
+
+
+{-| Ask for a forecast from Store. If it's not found, ask from servers.
+-}
+askForForecast :
+    ApiCredentials
+    -> (Msg -> msg)
+    -> Location
+    -> Model
+    -> ( ForecastRemoteData, Model, Cmd msg )
+askForForecast credentials tagger location model =
+    case getForecast location model of
+        NotAsked ->
+            let
+                cmd =
+                    Cmd.batch
+                        [ getWeather credentials location
+                        , get5DaysForecast credentials location
+                        ]
+                        |> Cmd.map tagger
+
+                newEntry =
+                    PartialForecast RemoteData.Loading RemoteData.Loading
+
+                newForecastStore =
+                    Dict.insert (Location.toString location) newEntry model
+            in
+            ( RemoteData.Loading, newForecastStore, cmd )
+
+        otherStatus ->
+            ( otherStatus, model, Cmd.none )
+
+
+{-| Get a Forecast from the store by its Location.
+-}
+getForecast : Location -> Model -> ForecastRemoteData
+getForecast location model =
+    let
+        buildForecast : Weather -> Next5DaysForecast -> Forecast
+        buildForecast currentWeather next5DaysForecast =
+            { cityName = next5DaysForecast.city
+            , currentWeather = currentWeather
+            , weathers = next5DaysForecast.weathers
+            }
+
+        partialForecastToForecast : PartialForcast -> ForecastRemoteData
+        partialForecastToForecast (PartialForecast weather next5DaysForecast) =
+            RemoteData.map2 buildForecast weather next5DaysForecast
+    in
+    Dict.get (Location.toString location) model
+        |> Maybe.map partialForecastToForecast
+        |> Maybe.withDefault RemoteData.NotAsked
+
+
+getWeather : ApiCredentials -> Location -> Cmd Msg
+getWeather credentials location =
     let
         url =
             buildUrl credentials "weather" location
+
+        resultToMsg =
+            Result.mapError parseHttpError >> RemoteData.fromResult >> CurrentWeatherRetrieved location
     in
     Http.get
         { url = url
-        , expect = Http.expectJson msg decodeWeather
+        , expect =
+            Http.expectJson resultToMsg decodeWeather
         }
 
 
-get5DaysForecast : ApiCredentials -> String -> (Result Http.Error ForecastResponse -> msg) -> Cmd msg
-get5DaysForecast credentials location msg =
+get5DaysForecast : ApiCredentials -> Location -> Cmd Msg
+get5DaysForecast credentials location =
     let
         url =
             buildUrl credentials "forecast" location
+
+        resultToMsg =
+            Result.mapError parseHttpError >> RemoteData.fromResult >> Next5DaysForecestRetrieved location
     in
     Http.get
         { url = url
-        , expect = Http.expectJson msg decodeForecast
+        , expect = Http.expectJson resultToMsg decodeForecast
         }
 
 
-buildUrl : ApiCredentials -> String -> String -> String
+buildUrl : ApiCredentials -> String -> Location -> String
 buildUrl { apiUrl, apiKey } path location =
+    let
+        locationQuery =
+            case location of
+                Place place ->
+                    "q=" ++ place
+
+                Coords _ _ ->
+                    Location.toString location
+    in
     apiUrl
         ++ "/"
         ++ path
-        ++ "?q="
-        ++ location
+        ++ "?"
+        ++ locationQuery
         ++ "&appid="
         ++ apiKey
         ++ "&units=metric"
+
+
+parseHttpError : Http.Error -> ForecastError
+parseHttpError httpError =
+    case httpError of
+        BadBody error ->
+            ParseError error
+
+        BadUrl error ->
+            HttpError <| "Bad Url: " ++ error
+
+        Timeout ->
+            HttpError <| "Connection timed out"
+
+        NetworkError ->
+            HttpError <| "Network error"
+
+        BadStatus 404 ->
+            InvalidLocation
+
+        BadStatus code ->
+            HttpError <| "Server answered with status: " ++ String.fromInt code
 
 
 decodeWeather : Decoder Weather
@@ -121,8 +275,8 @@ decodeWeather =
         |> D.requiredAt [ "clouds", "all" ] D.int
 
 
-decodeForecast : Decoder ForecastResponse
+decodeForecast : Decoder Next5DaysForecast
 decodeForecast =
-    D.succeed ForecastResponse
+    D.succeed Next5DaysForecast
         |> D.requiredAt [ "city", "name" ] D.string
         |> D.required "list" (D.list decodeWeather)
