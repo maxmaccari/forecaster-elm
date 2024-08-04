@@ -5,9 +5,9 @@ import Browser.Navigation as Nav
 import Dict exposing (Dict)
 import Elements exposing (baseView)
 import Html exposing (Html)
-import Html.Attributes exposing (class)
 import Http
 import Pages.Credits as CreditsPage
+import Pages.Forecast as ForecastPage
 import Pages.Home as HomePage
 import Pages.NotFound as NotFoundPage
 import Route exposing (Route)
@@ -25,6 +25,7 @@ type Page
     = HomePage HomePage.Model
     | CreditsPage
     | NotFoundPage
+    | ForecastPage
 
 
 type alias Model =
@@ -81,7 +82,7 @@ initCurrentPage ( model, cmd ) =
                     ( CreditsPage, Cmd.none )
 
                 Route.Forecast location ->
-                    ( NotFoundPage, Cmd.none )
+                    ( ForecastPage, Cmd.none )
     in
     ( { model | page = currentPage }, Cmd.batch [ cmd, mappedPageCmds ] )
 
@@ -172,6 +173,9 @@ currentView model =
         NotFoundPage ->
             NotFoundPage.view
                 |> Html.map NotFoundPageMsg
+
+        ForecastPage ->
+            ForecastPage.view
 
 
 main : Program Flags Model Msg

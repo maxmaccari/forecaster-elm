@@ -2,9 +2,9 @@ module Pages.Home exposing (Model, Msg, init, update, view)
 
 import Browser.Navigation as Nav
 import Elements exposing (dataTest, externalLink, linkButton, panel, separator)
-import Html exposing (Html, a, button, form, img, input, p, text)
-import Html.Attributes exposing (class, disabled, href, placeholder, rel, src, target, type_, width)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html exposing (Html, button, form, img, input, p, text)
+import Html.Attributes exposing (class, disabled, placeholder, src, type_, width)
+import Html.Events exposing (onInput, onSubmit)
 import Route
 import Types exposing (Location(..))
 
