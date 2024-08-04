@@ -44,6 +44,7 @@ type Msg
     | ForecastReceived (Result Http.Error ForecastResponse)
     | HomePageMsg HomePage.Msg
     | NotFoundPageMsg NotFoundPage.Msg
+    | CreditsPageMsg CreditsPage.Msg
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -128,6 +129,18 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        CreditsPageMsg creditsMsg ->
+            case model.page of
+                CreditsPage ->
+                    let
+                        cmd =
+                            CreditsPage.update creditsMsg model.navKey
+                    in
+                    ( model, Cmd.map CreditsPageMsg cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         WeatherReceived _ ->
             ( model, Cmd.none )
 
@@ -151,6 +164,7 @@ currentView model =
 
         CreditsPage ->
             CreditsPage.view
+                |> Html.map CreditsPageMsg
 
         NotFoundPage ->
             NotFoundPage.view

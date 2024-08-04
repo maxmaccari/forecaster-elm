@@ -1,7 +1,7 @@
 module Pages.Home exposing (Model, Msg, init, update, view)
 
 import Browser.Navigation as Nav
-import Elements exposing (linkButton, panel, separator)
+import Elements exposing (externalLink, linkButton, panel, separator)
 import Html exposing (Html, a, button, form, img, input, p, text)
 import Html.Attributes exposing (class, disabled, href, placeholder, rel, src, target, type_, width)
 import Html.Events exposing (onClick, onInput)
@@ -64,7 +64,7 @@ view model =
         , separator "mt-4 sm:mt-5"
         , p [ class "mt-3 sm:mt-4 leading-6 font-light text-justify" ]
             [ text "Designed and developed by "
-            , a [ href "https://www.linkedin.com/in/maxmaccari/", class "link", target "_blank", rel "noopener noreferrer nofollow" ] [ text "Maxsuel Maccari" ]
+            , externalLink "https://www.linkedin.com/in/maxmaccari/" "Maxsuel Maccari"
             , text ". You can check all credits of used assets "
             , linkButton CreditsButtonClicked "here"
             , text "."

@@ -1,7 +1,7 @@
 module Elements exposing (..)
 
-import Html exposing (Html, button, div, h2, hr, text)
-import Html.Attributes exposing (class, style)
+import Html exposing (Html, a, button, div, h2, hr, text)
+import Html.Attributes exposing (class, href, rel, style, target)
 import Html.Events exposing (onClick)
 
 
@@ -42,5 +42,16 @@ linkButton msg textContent =
     button
         [ class "text-primary underline cursor-pointer hover:text-primary/80"
         , onClick msg
+        ]
+        [ text textContent ]
+
+
+externalLink : String -> String -> Html msg
+externalLink url textContent =
+    a
+        [ href url
+        , class "text-primary underline cursor-pointer hover:text-primary/80"
+        , target "_blank"
+        , rel "noopener noreferrer nofollow"
         ]
         [ text textContent ]
