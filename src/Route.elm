@@ -1,7 +1,7 @@
 module Route exposing (..)
 
 import Browser.Navigation as Nav
-import Types exposing (Location(..))
+import Forecast.Location as Location exposing (Location(..))
 import Url exposing (Url)
 import Url.Parser exposing (..)
 
@@ -31,8 +31,8 @@ routeToString route =
         Credits ->
             "/credits"
 
-        Forecast (Place location) ->
-            "/forecast/" ++ location
+        Forecast location ->
+            "/forecast/" ++ Location.toString location
 
 
 parseUrl : Url -> Route
@@ -56,5 +56,4 @@ matchRoute =
 
 locationParser : Parser (Location -> a) a
 locationParser =
-    custom "LOCATION" <|
-        \location -> Just (Place location)
+    custom "LOCATION" <| (Location.parse >> Just)

@@ -2,11 +2,11 @@ module Pages.Home exposing (Model, Msg, init, update, view)
 
 import Browser.Navigation as Nav
 import Elements exposing (dataTest, externalLink, linkButton, panel, separator)
+import Forecast.Location exposing (Location(..))
 import Html exposing (Html, button, form, img, input, p, text)
 import Html.Attributes exposing (class, disabled, placeholder, src, type_, width)
 import Html.Events exposing (onInput, onSubmit)
 import Route
-import Types exposing (Location(..))
 
 
 type alias Model =

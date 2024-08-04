@@ -2,16 +2,14 @@ module Main exposing (..)
 
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
-import Dict exposing (Dict)
 import Elements exposing (baseView)
+import Forecast exposing (ApiCredentials)
 import Html exposing (Html)
-import Http
 import Pages.Credits as CreditsPage
 import Pages.Forecast as ForecastPage
 import Pages.Home as HomePage
 import Pages.NotFound as NotFoundPage
 import Route exposing (Route)
-import Types exposing (ApiCredentials, Forecast, ForecastResponse, Weather)
 import Url exposing (Url)
 
 
@@ -30,7 +28,6 @@ type Page
 
 type alias Model =
     { apiCredentials : ApiCredentials
-    , forecasts : Dict String Forecast
     , route : Route
     , page : Page
     , navKey : Nav.Key
@@ -41,8 +38,6 @@ type Msg
     = NoOp
     | UrlRequested UrlRequest
     | UrlChanged Url
-    | WeatherReceived (Result Http.Error Weather)
-    | ForecastReceived (Result Http.Error ForecastResponse)
     | HomePageMsg HomePage.Msg
     | NotFoundPageMsg NotFoundPage.Msg
     | CreditsPageMsg CreditsPage.Msg
@@ -53,7 +48,6 @@ init flags url navKey =
     let
         model =
             { apiCredentials = ApiCredentials flags.apiUrl flags.apiKey
-            , forecasts = Dict.empty
             , route = Route.parseUrl url
             , page = NotFoundPage
             , navKey = navKey
@@ -144,12 +138,6 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
-
-        WeatherReceived _ ->
-            ( model, Cmd.none )
-
-        ForecastReceived _ ->
-            ( model, Cmd.none )
 
 
 view : Model -> Document Msg

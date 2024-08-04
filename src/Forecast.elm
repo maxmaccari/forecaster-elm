@@ -1,11 +1,48 @@
-module Api exposing (get5DaysForecast, getWeather)
+module Forecast exposing (ApiCredentials)
 
-import Date exposing (fromPosix)
+import Date exposing (Date, fromPosix)
+import Forecast.Location exposing (Location(..))
 import Http
 import Json.Decode as D exposing (Decoder)
 import Json.Decode.Pipeline as D
 import Time exposing (millisToPosix, utc)
-import Types exposing (ApiCredentials, ForecastResponse, Weather)
+
+
+type alias ApiCredentials =
+    { apiUrl : String
+    , apiKey : String
+    }
+
+
+type alias Forecast =
+    { cityName : String
+    , currentWeather : Weather
+    , weathers : List Weather
+    }
+
+
+
+-- TODO: Create new custom types for Temperature, Humidity, Pressure and Icon
+
+
+type alias Weather =
+    { date : Date
+    , description : String
+    , icon : String
+    , temperature : Float
+    , feelsLike : Float
+    , min : Float
+    , max : Float
+    , humidity : Int
+    , pressure : Int
+    , cloudness : Int
+    }
+
+
+type alias ForecastResponse =
+    { city : String
+    , weathers : List Weather
+    }
 
 
 getWeather : ApiCredentials -> String -> (Result Http.Error Weather -> msg) -> Cmd msg
